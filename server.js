@@ -35,4 +35,7 @@ app.get("/", (req, res) => {
   res.send("ASPX Backend is running successfully 🚀");
 });
 
+// near other route mounts
+const forecastRoutes = require('./forecast_routes');
+app.use('/api', forecastRoutes);
 app.listen(PORT, () => console.log(`✅ ASPX backend running on port ${PORT}`));
