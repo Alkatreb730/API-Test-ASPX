@@ -1,0 +1,47 @@
+
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-apis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check Secrets
+        run: |
+          if [ -z "${{ secrets.COINGECKO_API_KEY }}" ]; then
+            echo "❌ ERROR: COINGECKO_API_KEY is missing or invalid."
+            exit 1
+          fi
+          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "❌ ERROR: OPENAI_API_KEY is missing or invalid."
+            exit 1
+          fi
+          echo "✅ All secrets are set correctly."
+
+      - name: Test CoinGecko API
+        run: |
+          echo "🔍 Testing CoinGecko API..."
+          response=$(curl -s -w "%{http_code}" -o /dev/null "https://api.coingecko.com/api/v3/ping" \
+          -H "accept: application/json" \
+          -H "x-cg-demo-api-key: ${{ secrets.COINGECKO_API_KEY }}")
+          if [ "$response" -ne 200 ]; then
+            echo "❌ CoinGecko API failed with status code $response"
+            exit 1
+          fi
+          echo "✅ CoinGecko API working fine."
+
+      - name: Test OpenAI API
+        run: |
+          echo "🤖 Testing OpenAI API..."
+          response=$(curl -s -w "%{http_code}" -o /dev/null https://api.openai.com/v1/models \
+          -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}")
+          if [ "$response" -ne 200 ]; then
+            echo "❌ OpenAI API failed with status code $response"
+            exit 1
+          fi
+          echo "✅ OpenAI API working fine."
